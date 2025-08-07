@@ -2,80 +2,83 @@ import streamlit as st
 import pandas as pd
 import json
 import os
-from urllib.parse import parse_qs
+from pathlib import Path
 
 # --- CONFIG ---
-DATA_DIR = "data"
-RESPONSES_DIR = "responses"
+DATA_DIR = Path("data")
+RESPONSES_DIR = Path("responses")
 NUM_TOTAL_TASKS = 40
-
-# --- Get RA ID from URL ---
-token_id = st.query_params.get("user", None)
-if isinstance(token_id, list):
-    token_id = token_id[0]
-
 
 st.set_page_config(page_title="Sentence Comparison Task", layout="centered")
 
-# --- Load task data ---
-if not ra_id:
-    st.error("Please provide your RA ID via the URL (e.g., ?user=RA1).")
+# --- Read token from URL (?user=TOKEN) ---
+# Use the non-experimental API
+token_id = st.query_params.get("user")  # returns str or None
+
+if not token_id:
+    st.error("Please provide your RA token via the URL (e.g., ?user=RA1_abcd1234).")
     st.stop()
 
-task_file = f"{DATA_DIR}/{ra_id}.json"
-if not os.path.exists(task_file):
-    st.error(f"No task file found for user: {ra_id}")
+# --- Resolve JSON file by token ---
+task_file = DATA_DIR / f"{token_id}.json"
+if not task_file.exists():
+    st.error(f"No task file found for token: {token_id}. Please check your link.")
     st.stop()
 
+# --- Load tasks for this token ---
+records = []
 with open(task_file, "r", encoding="utf-8") as f:
-    task_data = [json.loads(line) for line in f]
+    for line in f:
+        records.append(json.loads(line))
 
-df_tasks = pd.DataFrame(task_data)
+df_tasks = pd.DataFrame(records)
 df_tasks["index"] = range(1, len(df_tasks) + 1)
 
-# --- Load progress (if exists) ---
-response_path = f"{RESPONSES_DIR}/{ra_id}_responses.csv"
-if os.path.exists(response_path):
+# --- Persist responses locally (ephemeral on Streamlit Cloud) ---
+RESPONSES_DIR.mkdir(exist_ok=True, parents=True)
+response_path = RESPONSES_DIR / f"{token_id}_responses.csv"
+if response_path.exists():
     df_responses = pd.read_csv(response_path)
 else:
     df_responses = pd.DataFrame(columns=["pair_id", "sentence_A", "sentence_B", "choice"])
 
 # --- Determine next unanswered task ---
-answered_pairs = set(df_responses["pair_id"])
-remaining_df = df_tasks[~df_tasks["pair_id"].isin(answered_pairs)]
+answered = set(df_responses["pair_id"])
+remaining_df = df_tasks[~df_tasks["pair_id"].isin(answered)]
 
 if len(remaining_df) == 0:
     st.success("🎉 You have completed all 40 comparisons!")
-    st.download_button("Download your responses", df_responses.to_csv(index=False), file_name=f"{ra_id}_responses.csv")
-    st.markdown("📧 Please email your downloaded file to **werkmeister@ifo.de**. Thank you!")
+    st.download_button(
+        "Download your responses",
+        df_responses.to_csv(index=False),
+        file_name=f"{token_id}_responses.csv",
+    )
+    st.markdown("📧 Please email the downloaded file to **werkmeister@ifo.de**.")
     st.stop()
 
-current_task = remaining_df.iloc[0]
+current = remaining_df.iloc[0]
 
-# --- Display comparison task ---
 st.title("Sentence Comparison Task")
-st.markdown(f"**RA ID:** `{ra_id}`")
-st.markdown(f"**Progress:** {len(answered_pairs)}/40\n")
+st.markdown(f"**Token:** `{token_id}`")
+st.markdown(f"**Progress:** {len(answered)}/{NUM_TOTAL_TASKS}")
 
-st.markdown(f"### {current_task['index']}. Which sentence is better?")
+st.markdown(f"### {current['index']}. Which sentence is better?")
 st.write("**Sentence A**")
-st.info(current_task["sentence_A"])
+st.info(current["sentence_A"])
 st.write("**Sentence B**")
-st.info(current_task["sentence_B"])
+st.info(current["sentence_B"])
 
-# --- Record response ---
 def record_choice(choice):
     new_row = {
-        "pair_id": current_task["pair_id"],
-        "sentence_A": current_task["sentence_A"],
-        "sentence_B": current_task["sentence_B"],
-        "choice": choice
+        "pair_id": current["pair_id"],
+        "sentence_A": current["sentence_A"],
+        "sentence_B": current["sentence_B"],
+        "choice": choice,
     }
-    df_responses_updated = pd.concat([df_responses, pd.DataFrame([new_row])], ignore_index=True)
-    df_responses_updated.to_csv(response_path, index=False)
-    st.experimental_rerun()
+    updated = pd.concat([df_responses, pd.DataFrame([new_row])], ignore_index=True)
+    updated.to_csv(response_path, index=False)
+    st.rerun()
 
-st.write("#### Your choice:")
 col1, col2, col3 = st.columns(3)
 with col1:
     if st.button("Sentence A is better"):
