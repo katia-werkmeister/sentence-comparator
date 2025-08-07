@@ -10,8 +10,10 @@ RESPONSES_DIR = "responses"
 NUM_TOTAL_TASKS = 40
 
 # --- Get RA ID from URL ---
-query_params = st.query_params
-ra_id = query_params.get("user", [None])[0]
+token_id = st.query_params.get("user", None)
+if isinstance(token_id, list):
+    token_id = token_id[0]
+
 
 st.set_page_config(page_title="Sentence Comparison Task", layout="centered")
 
