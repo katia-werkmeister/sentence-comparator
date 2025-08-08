@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import json
 import os
+import time
 from pathlib import Path
 
 # --- CONFIG ---
@@ -78,13 +79,25 @@ def record_choice(choice):
     updated.to_csv(response_path, index=False)
     st.rerun()
 
-col1, col2, col3 = st.columns(3)
-with col1:
-    if st.button("Fähigkeit A ist offener formuliert"):
-        record_choice("A")
-with col2:
-    if st.button("Fähigkeit B ist offener formuliert"):
-        record_choice("B")
-with col3:
-    if st.button("Not sure"):
-        record_choice("Not sure")
+# --- 5s unlock timer per pair ---
+if st.session_state.get("last_pair_id") != current["pair_id"]:
+    st.session_state["last_pair_id"] = current["pair_id"]
+    st.session_state["unlock_at"] = time.time() + 5  # 5 seconds from now
+
+remaining = int(max(0, st.session_state["unlock_at"] - time.time()))
+
+if remaining > 0:
+    st.info(f"Bitte zuerst lesen … Buttons erscheinen in {remaining}s.")
+    time.sleep(1)
+    st.rerun()
+else:
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        if st.button("Fähigkeit A ist offener formuliert"):
+            record_choice("A")
+    with col2:
+        if st.button("Fähigkeit B ist offener formuliert"):
+            record_choice("B")
+    with col3:
+        if st.button("Not sure"):
+            record_choice("Not sure")
