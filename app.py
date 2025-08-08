@@ -7,9 +7,9 @@ from pathlib import Path
 # --- CONFIG ---
 DATA_DIR = Path("data")
 RESPONSES_DIR = Path("responses")
-NUM_TOTAL_TASKS = 40
+NUM_TOTAL_TASKS =  len(df)
 
-st.set_page_config(page_title="Sentence Comparison Task", layout="centered")
+st.set_page_config(page_title="Vergleiche", layout="centered")
 
 # --- Read token from URL (?user=TOKEN) ---
 # Use the non-experimental API
@@ -47,25 +47,25 @@ answered = set(df_responses["pair_id"])
 remaining_df = df_tasks[~df_tasks["pair_id"].isin(answered)]
 
 if len(remaining_df) == 0:
-    st.success("🎉 You have completed all 40 comparisons!")
+    st.success("🎉 Du hast alle Vergleiche abgeschlossen!")
     st.download_button(
-        "Download your responses",
+        "Lade deine Ergebnisse herunter",
         df_responses.to_csv(index=False),
         file_name=f"{token_id}_responses.csv",
     )
-    st.markdown("📧 Please email the downloaded file to **werkmeister@ifo.de**.")
+    st.markdown("📧 Bitte sende die heruntergeladene Datei an **werkmeister@ifo.de**.")
     st.stop()
 
 current = remaining_df.iloc[0]
 
-st.title("Sentence Comparison Task")
+st.title("Vergleiche")
 st.markdown(f"**Token:** `{token_id}`")
 st.markdown(f"**Progress:** {len(answered)}/{NUM_TOTAL_TASKS}")
 
-st.markdown(f"### {current['index']}. Which sentence is better?")
-st.write("**Sentence A**")
+st.markdown(f"### {current['index']}. Welche Fähigkeit ist offener formuliert?")
+st.write("**Fähigkeit A**")
 st.info(current["sentence_A"])
-st.write("**Sentence B**")
+st.write("**Fähigkeit B**")
 st.info(current["sentence_B"])
 
 def record_choice(choice):
@@ -81,10 +81,10 @@ def record_choice(choice):
 
 col1, col2, col3 = st.columns(3)
 with col1:
-    if st.button("Sentence A is better"):
+    if st.button("Fähigkeit A ist offener formuliert"):
         record_choice("A")
 with col2:
-    if st.button("Sentence B is better"):
+    if st.button("Fähigkeit B ist offener formuliert"):
         record_choice("B")
 with col3:
     if st.button("Not sure"):
