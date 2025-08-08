@@ -7,7 +7,6 @@ from pathlib import Path
 # --- CONFIG ---
 DATA_DIR = Path("data")
 RESPONSES_DIR = Path("responses")
-NUM_TOTAL_TASKS =  len(df)
 
 st.set_page_config(page_title="Vergleiche", layout="centered")
 
@@ -60,7 +59,7 @@ current = remaining_df.iloc[0]
 
 st.title("Vergleiche")
 st.markdown(f"**Token:** `{token_id}`")
-st.markdown(f"**Progress:** {len(answered)}/{NUM_TOTAL_TASKS}")
+st.markdown(f"**Progress:** {len(answered)}/{len(df_tasks)}")
 
 st.markdown(f"### {current['index']}. Welche Fähigkeit ist offener formuliert?")
 st.write("**Fähigkeit A**")
