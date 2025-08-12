@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import json
-import os
 import time
 from pathlib import Path
 from datetime import datetime
@@ -39,11 +38,11 @@ response_path = RESPONSES_DIR / f"{token_id}_responses.csv"
 
 resp_cols = [
     "pair_id", "sentence_A", "sentence_B",
-    "winner", "loser", "label", "weight",
-    "unknown_term", "timestamp"
+    "winner", "loser", "unknown_term", "timestamp"
 ]
 if response_path.exists():
     df_responses = pd.read_csv(response_path)
+    # ensure schema
     for c in resp_cols:
         if c not in df_responses.columns:
             df_responses[c] = pd.NA
@@ -77,16 +76,12 @@ st.info(current["sentence_A"])
 st.write("**Fähigkeit B**")
 st.info(current["sentence_B"])
 
-def save_response(choice_label: str, unknown_term: bool):
-    weight_map = {
-        "auf jeden Fall A": 1.0,
-        "eher A": 0.6,
-        "eher B": 0.6,
-        "auf jeden Fall B": 1.0,
-    }
-    winner_side = "A" if choice_label in ("auf jeden Fall A", "eher A") else "B"
-    winner = current["sentence_A"] if winner_side == "A" else current["sentence_B"]
-    loser  = current["sentence_B"] if winner_side == "A" else current["sentence_A"]
+# --- Helper to save a response ---
+def save_response(winner_side: str, unknown_term: bool):
+    if winner_side == "A":
+        winner = current["sentence_A"]; loser = current["sentence_B"]
+    else:
+        winner = current["sentence_B"]; loser = current["sentence_A"]
 
     new_row = {
         "pair_id": current["pair_id"],
@@ -94,8 +89,6 @@ def save_response(choice_label: str, unknown_term: bool):
         "sentence_B": current["sentence_B"],
         "winner": winner,
         "loser": loser,
-        "label": choice_label,
-        "weight": weight_map[choice_label],
         "unknown_term": bool(unknown_term),
         "timestamp": datetime.utcnow().isoformat()
     }
@@ -111,18 +104,26 @@ if st.session_state.get("last_pair_id") != current["pair_id"]:
 remaining = int(max(0, st.session_state["unlock_at"] - time.time()))
 
 if remaining > 0:
-    st.info(f"Bitte zuerst lesen … Auswahl erscheint in {remaining}s.")
+    # Separate timer block with bigger text and emoji
+    st.markdown(
+        f"<div style='text-align:center; padding:15px; border:2px solid #f39c12; border-radius:10px; background-color:#fff6e5;'>"
+        f"⏳ <span style='font-size:1.5em; font-weight:bold;'>Bitte zuerst lesen</span><br>"
+        f"Buttons erscheinen in <span style='color:#e67e22; font-size:1.5em;'>{remaining}</span> Sekunden"
+        f"</div>",
+        unsafe_allow_html=True
+    )
     time.sleep(1)
     st.rerun()
 else:
-    # ---- Always-visible options via select_slider ----
-    options = ["auf jeden Fall A", "eher A", "eher B", "auf jeden Fall B"]
-    choice_label = st.select_slider(
-        "Bitte wähle deine Einschätzung:",
-        options=options,
-        value="eher A"
-    )
-    unknown = st.checkbox("⚑ Unbekanntes Wort/Begriff in diesem Paar")
+    # Unknown-term checkbox (optional flag)
+    unknown = st.checkbox("⚑ Unbekannter Begriff in diesem Paar")
 
-    if st.button("Antwort speichern"):
-        save_response(choice_label, unknown)
+    # Two-choice buttons
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Fähigkeit A ist offener formuliert"):
+            save_response("A", unknown)
+    with col2:
+        if st.button("Fähigkeit B ist offener formuliert"):
+            save_response("B", unknown)
+
