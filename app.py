@@ -11,17 +11,17 @@ RESPONSES_DIR = Path("responses")
 
 st.set_page_config(page_title="Vergleiche", layout="centered")
 
-# --- Global CSS for styling sentences, timer, and per-column buttons ---
+# --- Scoped CSS (sentences, timer, and buttons tied to #choice-row) ---
 st.markdown("""
 <style>
 /* Sentence cards */
 .sentence-a {
   background-color:#D6D7F8; color:#131675; padding:15px; border-radius:10px;
-  border: 1px solid #c4c6f2; line-height:1.5;
+  border:1px solid #c4c6f2; line-height:1.5;
 }
 .sentence-b {
   background-color:#BFFFE1; color:#005F32; padding:15px; border-radius:10px;
-  border: 1px solid #9ef8d2; line-height:1.5;
+  border:1px solid #9ef8d2; line-height:1.5;
 }
 
 /* Timer box */
@@ -30,20 +30,20 @@ st.markdown("""
   border:2px solid #f4a888; text-align:center; font-weight:600;
 }
 
-/* Make buttons bigger and color them by column position */
-div[data-testid="column"]:nth-of-type(1) .stButton > button {
+/* Buttons inside the dedicated choice row only */
+#choice-row [data-testid="column"]:nth-child(1) .stButton > button {
   background:#D6D7F8; color:#131675; border:1px solid #131675;
   border-radius:10px; padding:10px 16px; font-weight:600;
 }
-div[data-testid="column"]:nth-of-type(1) .stButton > button:hover {
-  filter: brightness(0.98);
+#choice-row [data-testid="column"]:nth-child(1) .stButton > button:hover {
+  filter:brightness(0.98);
 }
-div[data-testid="column"]:nth-of-type(2) .stButton > button {
+#choice-row [data-testid="column"]:nth-child(2) .stButton > button {
   background:#BFFFE1; color:#005F32; border:1px solid #005F32;
   border-radius:10px; padding:10px 16px; font-weight:600;
 }
-div[data-testid="column"]:nth-of-type(2) .stButton > button:hover {
-  filter: brightness(0.98);
+#choice-row [data-testid="column"]:nth-child(2) .stButton > button:hover {
+  filter:brightness(0.98);
 }
 </style>
 """, unsafe_allow_html=True)
@@ -69,7 +69,7 @@ with open(task_file, "r", encoding="utf-8") as f:
 df_tasks = pd.DataFrame(records)
 df_tasks["index"] = range(1, len(df_tasks) + 1)
 
-# --- Persist responses locally (ephemeral on Streamlit Cloud) ---
+# --- Persist responses locally ---
 RESPONSES_DIR.mkdir(exist_ok=True, parents=True)
 response_path = RESPONSES_DIR / f"{token_id}_responses.csv"
 
@@ -86,6 +86,39 @@ if response_path.exists():
 else:
     df_responses = pd.DataFrame(columns=resp_cols)
 
+# ---------------- Welcome Page ----------------
+if "started" not in st.session_state:
+    st.session_state.started = False
+
+if not st.session_state.started:
+    st.title("Vergleiche")
+    st.markdown(f"**Token:** `{token_id}`")
+
+    st.markdown("""
+    **Willkommen!**
+
+    Ich nenne dir mehrere Paare an Fähigkeiten, die Auszubildende im Rahmen ihrer Ausbildung lernen können.  
+    **Entscheide für jedes Paar, welche „offener“ formuliert ist.**  
+    Mit „offen“ meinen wir, dass es viele verschiedene Möglichkeiten gibt, diese Fähigkeit anzuwenden.
+
+    Wenn du einen Begriff in einer der Fähigkeiten nicht kennst, kannst du das markieren, indem du auf **„Unbekannter Begriff in diesem Paar“** klickst.
+
+    Wenn du mit allen Paaren durch bist, **lade bitte die .csv herunter** und sende sie per Mail an **werkmeister@ifo.de**.
+    """)
+
+    st.markdown("**Beispiele (offenere Fähigkeit fett):**")
+    st.markdown("""
+    • **Werbeaktionen und Veranstaltungen planen** vs. „Anordnen und Platzieren von Fellen zu Werkstücken nach Wirkungsgrundsätzen“  
+    • „chemische Vorgänge bei der Negativ-, Positiv- und Umkehrentwicklung beschreiben“ vs. **betriebliches Warenwirtschaftssystem nutzen**  
+    • „Anwenden zeitsparender Nähtechniken“ vs. **Vorbereitende Arbeiten für die Buchhaltung durchführen**
+    """)
+
+    if st.button("Los geht’s"):
+        st.session_state.started = True
+        st.rerun()
+    st.stop()
+
+# ---------------- Task Page ----------------
 # --- Determine next unanswered task ---
 answered = set(df_responses["pair_id"].dropna())
 remaining_df = df_tasks[~df_tasks["pair_id"].isin(answered)]
@@ -149,14 +182,15 @@ if remaining > 0:
     time.sleep(1)
     st.rerun()
 else:
-    # Unknown-term checkbox
     unknown = st.checkbox("⚑ Unbekannter Begriff in diesem Paar")
 
-    # Two-choice buttons (colored per column)
+    # Choice buttons (scoped styling via #choice-row)
+    st.markdown("<div id='choice-row'>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("Fähigkeit A ist offener formuliert", use_container_width=True):
+        if st.button("Fähigkeit A ist offener formuliert", use_container_width=True, key="btnA"):
             save_response("A", unknown)
     with col2:
-        if st.button("Fähigkeit B ist offener formuliert", use_container_width=True):
+        if st.button("Fähigkeit B ist offener formuliert", use_container_width=True, key="btnB"):
             save_response("B", unknown)
+    st.markdown("</div>", unsafe_allow_html=True)
