@@ -37,7 +37,6 @@ df_tasks["index"] = range(1, len(df_tasks) + 1)
 RESPONSES_DIR.mkdir(exist_ok=True, parents=True)
 response_path = RESPONSES_DIR / f"{token_id}_responses.csv"
 
-# unified schema (works even if an older file exists)
 resp_cols = [
     "pair_id", "sentence_A", "sentence_B",
     "winner", "loser", "label", "weight",
@@ -78,17 +77,16 @@ st.info(current["sentence_A"])
 st.write("**Fähigkeit B**")
 st.info(current["sentence_B"])
 
-def record_choice_from_slider(choice_idx: int, unknown_term: bool):
-    labels = ["auf jeden Fall A", "eher A", "eher B", "auf jeden Fall B"]
-    weights = [1.0, 0.6, 0.6, 1.0]  # tweak if needed
-    winner_map = ["A", "A", "B", "B"]
-
-    label = labels[choice_idx]
-    winner_side = winner_map[choice_idx]
-    if winner_side == "A":
-        winner, loser = current["sentence_A"], current["sentence_B"]
-    else:
-        winner, loser = current["sentence_B"], current["sentence_A"]
+def save_response(choice_label: str, unknown_term: bool):
+    weight_map = {
+        "auf jeden Fall A": 1.0,
+        "eher A": 0.6,
+        "eher B": 0.6,
+        "auf jeden Fall B": 1.0,
+    }
+    winner_side = "A" if choice_label in ("auf jeden Fall A", "eher A") else "B"
+    winner = current["sentence_A"] if winner_side == "A" else current["sentence_B"]
+    loser  = current["sentence_B"] if winner_side == "A" else current["sentence_A"]
 
     new_row = {
         "pair_id": current["pair_id"],
@@ -96,8 +94,8 @@ def record_choice_from_slider(choice_idx: int, unknown_term: bool):
         "sentence_B": current["sentence_B"],
         "winner": winner,
         "loser": loser,
-        "label": label,
-        "weight": weights[choice_idx],
+        "label": choice_label,
+        "weight": weight_map[choice_label],
         "unknown_term": bool(unknown_term),
         "timestamp": datetime.utcnow().isoformat()
     }
@@ -117,17 +115,14 @@ if remaining > 0:
     time.sleep(1)
     st.rerun()
 else:
-    # ---- Confidence slider + submit ----
-    labels = ["auf jeden Fall A", "eher A", "eher B", "auf jeden Fall B"]
-    choice_idx = st.slider(
-        "Wie sicher bist du in deiner Entscheidung?",
-        min_value=0, max_value=3, value=1, step=1, format="%d"
+    # ---- Always-visible options via select_slider ----
+    options = ["auf jeden Fall A", "eher A", "eher B", "auf jeden Fall B"]
+    choice_label = st.select_slider(
+        "Bitte wähle deine Einschätzung:",
+        options=options,
+        value="eher A"
     )
-    # show the textual label under the slider
-    st.caption(f"Auswahl: **{labels[choice_idx]}**")
-
     unknown = st.checkbox("⚑ Unbekanntes Wort/Begriff in diesem Paar")
 
-    # Submit button
     if st.button("Antwort speichern"):
-        record_choice_from_slider(choice_idx, unknown)
+        save_response(choice_label, unknown)
