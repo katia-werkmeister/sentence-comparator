@@ -11,6 +11,43 @@ RESPONSES_DIR = Path("responses")
 
 st.set_page_config(page_title="Vergleiche", layout="centered")
 
+# --- Global CSS for styling sentences, timer, and per-column buttons ---
+st.markdown("""
+<style>
+/* Sentence cards */
+.sentence-a {
+  background-color:#D6D7F8; color:#131675; padding:15px; border-radius:10px;
+  border: 1px solid #c4c6f2; line-height:1.5;
+}
+.sentence-b {
+  background-color:#BFFFE1; color:#005F32; padding:15px; border-radius:10px;
+  border: 1px solid #9ef8d2; line-height:1.5;
+}
+
+/* Timer box */
+.timer-box {
+  background:#FFDACB; color:#BB3500; padding:16px; border-radius:12px;
+  border:2px solid #f4a888; text-align:center; font-weight:600;
+}
+
+/* Make buttons bigger and color them by column position */
+div[data-testid="column"]:nth-of-type(1) .stButton > button {
+  background:#D6D7F8; color:#131675; border:1px solid #131675;
+  border-radius:10px; padding:10px 16px; font-weight:600;
+}
+div[data-testid="column"]:nth-of-type(1) .stButton > button:hover {
+  filter: brightness(0.98);
+}
+div[data-testid="column"]:nth-of-type(2) .stButton > button {
+  background:#BFFFE1; color:#005F32; border:1px solid #005F32;
+  border-radius:10px; padding:10px 16px; font-weight:600;
+}
+div[data-testid="column"]:nth-of-type(2) .stButton > button:hover {
+  filter: brightness(0.98);
+}
+</style>
+""", unsafe_allow_html=True)
+
 # --- Read token from URL (?user=TOKEN) ---
 token_id = st.query_params.get("user")  # returns str or None
 if not token_id:
@@ -42,7 +79,6 @@ resp_cols = [
 ]
 if response_path.exists():
     df_responses = pd.read_csv(response_path)
-    # ensure schema
     for c in resp_cols:
         if c not in df_responses.columns:
             df_responses[c] = pd.NA
@@ -71,18 +107,18 @@ st.markdown(f"**Token:** `{token_id}`")
 st.markdown(f"**Fortschritt:** {len(answered)}/{len(df_tasks)}")
 
 st.markdown(f"### {current['index']}. Welche Fähigkeit ist offener formuliert?")
-st.write("**Fähigkeit A**")
-st.info(current["sentence_A"])
-st.write("**Fähigkeit B**")
-st.info(current["sentence_B"])
 
-# --- Helper to save a response ---
+# Styled sentences
+st.write("**Fähigkeit A**")
+st.markdown(f"<div class='sentence-a'>{current['sentence_A']}</div>", unsafe_allow_html=True)
+st.write("**Fähigkeit B**")
+st.markdown(f"<div class='sentence-b'>{current['sentence_B']}</div>", unsafe_allow_html=True)
+
 def save_response(winner_side: str, unknown_term: bool):
     if winner_side == "A":
         winner = current["sentence_A"]; loser = current["sentence_B"]
     else:
         winner = current["sentence_B"]; loser = current["sentence_A"]
-
     new_row = {
         "pair_id": current["pair_id"],
         "sentence_A": current["sentence_A"],
@@ -104,26 +140,23 @@ if st.session_state.get("last_pair_id") != current["pair_id"]:
 remaining = int(max(0, st.session_state["unlock_at"] - time.time()))
 
 if remaining > 0:
-    # Separate timer block with bigger text and emoji
+    # TIMER ONLY (no buttons yet)
     st.markdown(
-        f"<div style='text-align:center; padding:15px; border:2px solid #f39c12; border-radius:10px; background-color:#fff6e5;'>"
-        f"⏳ <span style='font-size:1.5em; font-weight:bold;'>Bitte zuerst lesen</span><br>"
-        f"Buttons erscheinen in <span style='color:#e67e22; font-size:1.5em;'>{remaining}</span> Sekunden"
-        f"</div>",
+        f"<div class='timer-box'>⏳ Bitte zuerst lesen.<br>"
+        f"Die Auswahl erscheint in <span style='font-size:1.4em;'>{remaining}</span> Sekunden.</div>",
         unsafe_allow_html=True
     )
     time.sleep(1)
     st.rerun()
 else:
-    # Unknown-term checkbox (optional flag)
+    # Unknown-term checkbox
     unknown = st.checkbox("⚑ Unbekannter Begriff in diesem Paar")
 
-    # Two-choice buttons
+    # Two-choice buttons (colored per column)
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("Fähigkeit A ist offener formuliert"):
+        if st.button("Fähigkeit A ist offener formuliert", use_container_width=True):
             save_response("A", unknown)
     with col2:
-        if st.button("Fähigkeit B ist offener formuliert"):
+        if st.button("Fähigkeit B ist offener formuliert", use_container_width=True):
             save_response("B", unknown)
-
