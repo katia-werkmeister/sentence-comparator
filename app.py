@@ -11,39 +11,13 @@ RESPONSES_DIR = Path("responses")
 
 st.set_page_config(page_title="Vergleiche", layout="centered")
 
-# --- Scoped CSS (sentences, timer, and buttons tied to #choice-row) ---
+# --- Scoped CSS (timer only) ---
 st.markdown("""
 <style>
-/* Sentence cards */
-.sentence-a {
-  background-color:#D6D7F8; color:#131675; padding:15px; border-radius:10px;
-  border:1px solid #c4c6f2; line-height:1.5;
-}
-.sentence-b {
-  background-color:#BFFFE1; color:#005F32; padding:15px; border-radius:10px;
-  border:1px solid #9ef8d2; line-height:1.5;
-}
-
 /* Timer box */
 .timer-box {
-  background:#FFDACB; color:#BB3500; padding:16px; border-radius:12px;
-  border:2px solid #f4a888; text-align:center; font-weight:600;
-}
-
-/* Buttons inside the dedicated choice row only */
-#choice-row [data-testid="column"]:nth-child(1) .stButton > button {
-  background:#D6D7F8; color:#131675; border:1px solid #131675;
-  border-radius:10px; padding:10px 16px; font-weight:600;
-}
-#choice-row [data-testid="column"]:nth-child(1) .stButton > button:hover {
-  filter:brightness(0.98);
-}
-#choice-row [data-testid="column"]:nth-child(2) .stButton > button {
-  background:#BFFFE1; color:#005F32; border:1px solid #005F32;
-  border-radius:10px; padding:10px 16px; font-weight:600;
-}
-#choice-row [data-testid="column"]:nth-child(2) .stButton > button:hover {
-  filter:brightness(0.98);
+  background:#D6D7F8; color:#131675; padding:16px; border-radius:12px;
+  border:2px solid #aeb0f2; text-align:center; font-weight:600;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -140,12 +114,10 @@ st.markdown(f"**Token:** `{token_id}`")
 st.markdown(f"**Fortschritt:** {len(answered)}/{len(df_tasks)}")
 
 st.markdown(f"### {current['index']}. Welche Fähigkeit ist offener formuliert?")
-
-# Styled sentences
 st.write("**Fähigkeit A**")
-st.markdown(f"<div class='sentence-a'>{current['sentence_A']}</div>", unsafe_allow_html=True)
+st.info(current["sentence_A"])
 st.write("**Fähigkeit B**")
-st.markdown(f"<div class='sentence-b'>{current['sentence_B']}</div>", unsafe_allow_html=True)
+st.info(current["sentence_B"])
 
 def save_response(winner_side: str, unknown_term: bool):
     if winner_side == "A":
@@ -173,7 +145,6 @@ if st.session_state.get("last_pair_id") != current["pair_id"]:
 remaining = int(max(0, st.session_state["unlock_at"] - time.time()))
 
 if remaining > 0:
-    # TIMER ONLY (no buttons yet)
     st.markdown(
         f"<div class='timer-box'>⏳ Bitte zuerst lesen.<br>"
         f"Die Auswahl erscheint in <span style='font-size:1.4em;'>{remaining}</span> Sekunden.</div>",
@@ -184,13 +155,10 @@ if remaining > 0:
 else:
     unknown = st.checkbox("⚑ Unbekannter Begriff in diesem Paar")
 
-    # Choice buttons (scoped styling via #choice-row)
-    st.markdown("<div id='choice-row'>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("Fähigkeit A ist offener formuliert", use_container_width=True, key="btnA"):
+        if st.button("Fähigkeit A ist offener formuliert", use_container_width=True):
             save_response("A", unknown)
     with col2:
-        if st.button("Fähigkeit B ist offener formuliert", use_container_width=True, key="btnB"):
+        if st.button("Fähigkeit B ist offener formuliert", use_container_width=True):
             save_response("B", unknown)
-    st.markdown("</div>", unsafe_allow_html=True)
