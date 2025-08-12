@@ -11,10 +11,9 @@ RESPONSES_DIR = Path("responses")
 
 st.set_page_config(page_title="Vergleiche", layout="centered")
 
-# --- Scoped CSS (timer only) ---
+# --- CSS: blue timer only ---
 st.markdown("""
 <style>
-/* Timer box */
 .timer-box {
   background:#D6D7F8; color:#131675; padding:16px; border-radius:12px;
   border:2px solid #aeb0f2; text-align:center; font-weight:600;
@@ -69,23 +68,23 @@ if not st.session_state.started:
     st.markdown(f"**Token:** `{token_id}`")
 
     st.markdown("""
-    **Willkommen!**
+**Willkommen!**
 
-    Ich nenne dir mehrere Paare an Fähigkeiten, die Auszubildende im Rahmen ihrer Ausbildung lernen können.  
-    **Entscheide für jedes Paar, welche „offener“ formuliert ist.**  
-    Mit „offen“ meinen wir, dass es viele verschiedene Möglichkeiten gibt, diese Fähigkeit anzuwenden.
+Ich nenne dir mehrere Paare an Fähigkeiten, die Auszubildende im Rahmen ihrer Ausbildung lernen können.  
+**Entscheide für jedes Paar, welche „offener“ formuliert ist.**  
+Mit „offen“ meinen wir, dass es viele verschiedene Möglichkeiten gibt, diese Fähigkeit anzuwenden.
 
-    Wenn du einen Begriff in einer der Fähigkeiten nicht kennst, kannst du das markieren, indem du auf **„Unbekannter Begriff in diesem Paar“** klickst.
+Wenn du einen Begriff in einer der Fähigkeiten nicht kennst, kannst du das markieren, indem du auf **„Unbekannter Begriff in diesem Paar“** klickst.
 
-    Wenn du mit allen Paaren durch bist, **lade bitte die .csv herunter** und sende sie per Mail an **werkmeister@ifo.de**.
-    """)
+Wenn du mit allen Paaren durch bist, **lade bitte die .csv herunter** und sende sie per Mail an **werkmeister@ifo.de**.
+""")
 
     st.markdown("**Beispiele (offenere Fähigkeit fett):**")
     st.markdown("""
-    • **Werbeaktionen und Veranstaltungen planen** vs. „Anordnen und Platzieren von Fellen zu Werkstücken nach Wirkungsgrundsätzen“  
-    • „chemische Vorgänge bei der Negativ-, Positiv- und Umkehrentwicklung beschreiben“ vs. **betriebliches Warenwirtschaftssystem nutzen**  
-    • „Anwenden zeitsparender Nähtechniken“ vs. **Vorbereitende Arbeiten für die Buchhaltung durchführen**
-    """)
+• **Werbeaktionen und Veranstaltungen planen** vs. „Anordnen und Platzieren von Fellen zu Werkstücken nach Wirkungsgrundsätzen“  
+• „chemische Vorgänge bei der Negativ-, Positiv- und Umkehrentwicklung beschreiben“ vs. **betriebliches Warenwirtschaftssystem nutzen**  
+• „Anwenden zeitsparender Nähtechniken“ vs. **Vorbereitende Arbeiten für die Buchhaltung durchführen**
+""")
 
     if st.button("Los geht’s"):
         st.session_state.started = True
@@ -137,21 +136,24 @@ def save_response(winner_side: str, unknown_term: bool):
     updated.to_csv(response_path, index=False)
     st.rerun()
 
-# --- 5s unlock timer per pair ---
+# --- 5s unlock timer per pair (strict gating) ---
 if st.session_state.get("last_pair_id") != current["pair_id"]:
     st.session_state["last_pair_id"] = current["pair_id"]
     st.session_state["unlock_at"] = time.time() + 5  # 5 seconds from now
 
-remaining = int(max(0, st.session_state["unlock_at"] - time.time()))
+remaining = max(0, st.session_state["unlock_at"] - time.time())
+remaining_int = int(remaining)
 
-if remaining > 0:
+if remaining_int > 0:
+    # Render ONLY the timer, then pause and rerun; nothing else will render this pass
     st.markdown(
         f"<div class='timer-box'>⏳ Bitte zuerst lesen.<br>"
-        f"Die Auswahl erscheint in <span style='font-size:1.4em;'>{remaining}</span> Sekunden.</div>",
+        f"Die Auswahl erscheint in <span style='font-size:1.4em;'>{remaining_int}</span> Sekunden.</div>",
         unsafe_allow_html=True
     )
     time.sleep(1)
-    st.rerun()
+    st.rerun()   # raises a rerun exception; no further code will run
+    st.stop()    # safety (won't be reached)
 else:
     unknown = st.checkbox("⚑ Unbekannter Begriff in diesem Paar")
 
