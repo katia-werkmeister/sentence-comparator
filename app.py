@@ -9,7 +9,7 @@ from datetime import datetime
 DATA_DIR = Path("data")
 RESPONSES_DIR = Path("responses")
 
-st.set_page_config(page_title="Vergleiche", layout="centered")
+st.set_page_config(page_title="Vergleiche", layout="wide")
 
 # --- CSS: blue timer only ---
 st.markdown("""
@@ -74,13 +74,15 @@ Du siehst gleich mehrere **Paare von Tätigkeiten**, die Auszubildende im Rahmen
 Bitte **entscheide für jedes Paar**, welche Tätigkeit **„offener“ formuliert** ist.
 
 **Was bedeutet „offen“?**  
-Eine offene Formulierung lässt **viele verschiedene Ausführungsmöglichkeiten** zu, zum Beispiel weil die Tätigkeit zwischen Betrieben oder Industrien variiert.
+Eine offene Formulierung lässt **viele verschiedene Ausführungsmöglichkeiten** zu, zum Beispiel weil die Tätigkeit zwischen Betrieben oder Industrien variieren kann.
 
 **Beispiele (offenere Tätigkeit fett):**
-- **Werbeaktionen und Veranstaltungen planen** vs. „Anordnen und Platzieren von Fellen zu Werkstücken nach Wirkungsgrundsätzen“  
-  ↳ Die erste Fähigkeit ist offener, weil sie keinen Regeln folgt, die zweite aber "Wirkungsgrundsätzen" folgt. Außerdem sind sowohl „planen“ als auch "Veranstaltungen" sehr generell, aber sowohl "platzieren" als auch "Felle" sehr konkret.
-- „Anwenden zeitsparender Nähtechniken“ vs. **Vorbereitende Arbeiten für die Buchhaltung durchführen**  
-  ↳ Die zweite Fähigkeit ist offener, weil es verschiedene Buchhaltungsprogramme gibt und "vorbereitende Arbeiten" viel Verschiedenes bedeuten kann (Belege sammeln, Rücksprache halten, Unterlagen digitalisieren, ...). Dagegen gibt es beschränkt viele "Nähtechniken" und "zeitsparend" schränkt die verfügbaren Techniken zusätzlich ein. 
+- **„Werbeaktionen und Veranstaltungen planen“** vs. „Anordnen und Platzieren von Fellen zu Werkstücken nach Wirkungsgrundsätzen“  
+  > Die erste Tätigkeit ist offener, weil sie keinen Regeln folgt, die zweite aber „Wirkungsgrundsätzen“ folgt. 
+  > Außerdem sind sowohl „planen“ als auch „Veranstaltungen“ sehr generell, aber sowohl „platzieren“ als auch „Felle“ sehr konkret.
+- „Anwenden zeitsparender Nähtechniken“ vs. **„Vorbereitende Arbeiten für die Buchhaltung durchführen“**  
+  > Die zweite Tätigkeit ist offener, weil es verschiedene Buchhaltungsprogramme gibt und „vorbereitende Arbeiten“ viele verschiedene Tätigkeiten bedeuten kann (Belege sammeln, Rücksprache halten, Unterlagen digitalisieren, ...). 
+  > Dagegen gibt es beschränkt viele „Nähtechniken“ und „zeitsparend“ schränkt die verfügbaren Techniken zusätzlich ein.
 
 **So gehst du vor:**
 - Lies beide Tätigkeiten.
