@@ -14,7 +14,7 @@ st.set_page_config(page_title="Vergleiche", layout="wide")
 st.markdown("""
 <style>
 .main {
-    max-width: 1200px; /* adjust to taste */
+    max-width: 1000px; 
     margin: 0 auto;
 }
 </style>
