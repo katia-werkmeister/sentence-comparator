@@ -11,6 +11,15 @@ RESPONSES_DIR = Path("responses")
 
 st.set_page_config(page_title="Vergleiche", layout="wide")
 
+st.markdown("""
+<style>
+.main {
+    max-width: 1200px; /* adjust to taste */
+    margin: 0 auto;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # --- CSS: blue timer only ---
 st.markdown("""
 <style>
