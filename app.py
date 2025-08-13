@@ -64,27 +64,33 @@ if "started" not in st.session_state:
     st.session_state.started = False
 
 if not st.session_state.started:
-    st.title("Vergleiche")
+    st.title("Offenheit von Tätigkeiten")
     st.markdown(f"**Token:** `{token_id}`")
 
     st.markdown("""
 **Willkommen!**
+                
+Du siehst gleich mehrere **Paare von Tätigkeiten**, die Auszubildende im Rahmen ihrer Ausbildung lernen können.  
+Bitte **entscheide für jedes Paar**, welche Tätigkeit **„offener“ formuliert** ist.
 
-Ich nenne dir mehrere Paare an Fähigkeiten, die Auszubildende im Rahmen ihrer Ausbildung lernen können.  
-**Entscheide für jedes Paar, welche „offener“ formuliert ist.**  
-Mit „offen“ meinen wir, dass es viele verschiedene Möglichkeiten gibt, diese Fähigkeit anzuwenden.
+**Was bedeutet „offen“?**  
+Eine offene Formulierung lässt **viele verschiedene Ausführungsmöglichkeiten** zu, zum Beispiel weil die Tätigkeit zwischen Betrieben oder Industrien variiert.
 
-Wenn du einen Begriff in einer der Fähigkeiten nicht kennst, kannst du das markieren, indem du auf **„Unbekannter Begriff in diesem Paar“** klickst.
+**Beispiele (offenere Tätigkeit fett):**
+- **Werbeaktionen und Veranstaltungen planen** vs. „Anordnen und Platzieren von Fellen zu Werkstücken nach Wirkungsgrundsätzen“  
+  ↳ Die erste Fähigkeit ist offener, weil sie keinen Regeln folgt, die zweite aber "Wirkungsgrundsätzen" folgt. Außerdem sind sowohl „planen“ als auch "Veranstaltungen" sehr generell, aber sowohl "platzieren" als auch "Felle" sehr konkret.
+- „Anwenden zeitsparender Nähtechniken“ vs. **Vorbereitende Arbeiten für die Buchhaltung durchführen**  
+  ↳ Die zweite Fähigkeit ist offener, weil es verschiedene Buchhaltungsprogramme gibt und "vorbereitende Arbeiten" viel Verschiedenes bedeuten kann (Belege sammeln, Rücksprache halten, Unterlagen digitalisieren, ...). Dagegen gibt es beschränkt viele "Nähtechniken" und "zeitsparend" schränkt die verfügbaren Techniken zusätzlich ein. 
 
-Wenn du mit allen Paaren durch bist, **lade bitte die .csv herunter** und sende sie per Mail an **werkmeister@ifo.de**.
+**So gehst du vor:**
+- Lies beide Tätigkeiten.
+- Klicke auf **„Tätigkeit A ist offener formuliert“** oder **„Tätigkeit B ist offener formuliert“**.
+- Wenn du in einem Paar **einen Begriff nicht kennst**, markiere das zusätzlich über **„Unbekannter Begriff in diesem Paar“** – **entscheide dich trotzdem** für A oder B.
+- Am Ende: **lade die .csv herunter** und sende sie per E-Mail an **werkmeister@ifo.de**.
+
 """)
 
-    st.markdown("**Beispiele (offenere Fähigkeit fett):**")
-    st.markdown("""
-• **Werbeaktionen und Veranstaltungen planen** vs. „Anordnen und Platzieren von Fellen zu Werkstücken nach Wirkungsgrundsätzen“  
-• „chemische Vorgänge bei der Negativ-, Positiv- und Umkehrentwicklung beschreiben“ vs. **betriebliches Warenwirtschaftssystem nutzen**  
-• „Anwenden zeitsparender Nähtechniken“ vs. **Vorbereitende Arbeiten für die Buchhaltung durchführen**
-""")
+    
 
     if st.button("Los geht’s"):
         st.session_state.started = True
@@ -112,10 +118,10 @@ st.title("Vergleiche")
 st.markdown(f"**Token:** `{token_id}`")
 st.markdown(f"**Fortschritt:** {len(answered)}/{len(df_tasks)}")
 
-st.markdown(f"### {current['index']}. Welche Fähigkeit ist offener formuliert?")
-st.write("**Fähigkeit A**")
+st.markdown(f"### {current['index']}. Welche Tätigkeit ist offener formuliert?")
+st.write("**Tätigkeit A**")
 st.info(current["sentence_A"])
-st.write("**Fähigkeit B**")
+st.write("**Tätigkeit B**")
 st.info(current["sentence_B"])
 
 def save_response(winner_side: str, unknown_term: bool):
@@ -139,7 +145,7 @@ def save_response(winner_side: str, unknown_term: bool):
 # --- 5s unlock timer per pair (strict gating) ---
 if st.session_state.get("last_pair_id") != current["pair_id"]:
     st.session_state["last_pair_id"] = current["pair_id"]
-    st.session_state["unlock_at"] = time.time() + 5  # 5 seconds from now
+    st.session_state["unlock_at"] = time.time() + 10  # 10 seconds from now
 
 remaining = max(0, st.session_state["unlock_at"] - time.time())
 remaining_int = int(remaining)
@@ -159,8 +165,8 @@ else:
 
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("Fähigkeit A ist offener formuliert", use_container_width=True):
+        if st.button("Tätigkeit A ist offener formuliert", use_container_width=True):
             save_response("A", unknown)
     with col2:
-        if st.button("Fähigkeit B ist offener formuliert", use_container_width=True):
+        if st.button("Tätigkeit B ist offener formuliert", use_container_width=True):
             save_response("B", unknown)
