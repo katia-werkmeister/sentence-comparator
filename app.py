@@ -9,16 +9,7 @@ from datetime import datetime
 DATA_DIR = Path("data")
 RESPONSES_DIR = Path("responses")
 
-st.set_page_config(page_title="Vergleiche", layout="wide")
-
-st.markdown("""
-<style>
-.main {
-    max-width: 1000px; 
-    margin: 0 auto;
-}
-</style>
-""", unsafe_allow_html=True)
+st.set_page_config(page_title="Vergleiche", layout="centered")
 
 # --- CSS: blue timer only ---
 st.markdown("""
@@ -78,9 +69,8 @@ if not st.session_state.started:
 
     st.markdown("""
 **Willkommen!**
-                
-Du siehst gleich mehrere **Paare von Tätigkeiten**, die Auszubildende im Rahmen ihrer Ausbildung lernen können.  
-Bitte **entscheide für jedes Paar**, welche Tätigkeit **„offener“ formuliert** ist.
+
+Du siehst gleich mehrere **Paare von Tätigkeiten**, die Auszubildende im Rahmen ihrer Ausbildung lernen können. Bitte **entscheide für jedes Paar**, welche Tätigkeit **„offener“ formuliert** ist.
 
 **Was bedeutet „offen“?**  
 Eine offene Formulierung lässt **viele verschiedene Ausführungsmöglichkeiten** zu, zum Beispiel weil die Tätigkeit zwischen Betrieben oder Industrien variieren kann.
