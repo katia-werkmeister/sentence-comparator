@@ -73,7 +73,7 @@ if not st.session_state.started:
 Du siehst gleich mehrere **Paare von Tätigkeiten**, die Auszubildende im Rahmen ihrer Ausbildung lernen können. Bitte **entscheide für jedes Paar**, welche Tätigkeit **„offener“ formuliert** ist.
 
 **Was bedeutet „offen“?**  
-Eine offene Formulierung lässt **viele verschiedene Ausführungsmöglichkeiten** zu, zum Beispiel weil die Tätigkeit zwischen Betrieben oder Industrien variieren kann.
+Eine offene Formulierung lässt **viele verschiedene Ausführungsmöglichkeiten** zu, zum Beispiel weil die Ausführung zwischen Betrieben oder Industrien variieren kann.
 
 **Beispiele:**
 - „Werbeaktionen und Veranstaltungen planen“ vs. „Anordnen und Platzieren von Fellen zu Werkstücken nach Wirkungsgrundsätzen“  
