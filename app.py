@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as st 
 import pandas as pd
 import json
 import time
@@ -91,14 +91,32 @@ Eine offene Formulierung lässt **viele verschiedene Ausführungsmöglichkeiten*
 
 """)
 
-    
-
     if st.button("Los geht’s"):
         st.session_state.started = True
         st.rerun()
     st.stop()
 
 # ---------------- Task Page ----------------
+
+# ---- Helper: Inline expander with definition/examples ----
+if "help_pinned" not in st.session_state:
+    st.session_state.help_pinned = False
+
+def render_help_expander():
+    with st.expander("ℹ️ Was bedeutet „offen“? (Erklärung & Beispiele)", expanded=st.session_state.help_pinned):
+        st.markdown("""
+Eine offene Formulierung lässt **viele verschiedene Ausführungsmöglichkeiten** zu, zum Beispiel weil Betriebe die Aufgabe auf ihre eigene Art und Weise ausführen können.
+
+**Beispiele:**
+- **„Werbeaktionen und Veranstaltungen planen“** vs. **„Anordnen und Platzieren von Fellen zu Werkstücken nach Wirkungsgrundsätzen“**  
+  > Die erste Tätigkeit ist offener, weil sie keinen Regeln folgt, die zweite aber „Wirkungsgrundsätzen“ folgt.  
+  > Außerdem sind sowohl „planen“ als auch „Veranstaltungen“ sehr generell, aber sowohl „platzieren“ als auch „Felle“ sehr konkret.
+- **„Anwenden zeitsparender Nähtechniken“** vs. **„Vorbereitende Arbeiten für die Buchhaltung durchführen“**  
+  > Die zweite Tätigkeit ist offener, weil es verschiedene Betriebe unterschiedliche Buchhaltungsprogramme nutzen und „vorbereitende Arbeiten“ viele verschiedene Tätigkeiten bedeuten kann (Belege sammeln, Rücksprache halten, Unterlagen digitalisieren, ...).  
+  > Dagegen gibt es beschränkt viele „Nähtechniken“ und „zeitsparend“ schränkt die verfügbaren Techniken zusätzlich ein.
+""")
+    st.checkbox("Erklärung immer geöffnet lassen", key="help_pinned", help="Wenn aktiviert, bleibt die Erklärung für alle Paare geöffnet.")
+
 # --- Determine next unanswered task ---
 answered = set(df_responses["pair_id"].dropna())
 remaining_df = df_tasks[~df_tasks["pair_id"].isin(answered)]
@@ -120,6 +138,10 @@ st.markdown(f"**Token:** `{token_id}`")
 st.markdown(f"**Fortschritt:** {len(answered)}/{len(df_tasks)}")
 
 st.markdown(f"### {current['index']}. Welche Tätigkeit ist offener formuliert?")
+
+# ---- Inline expander appears here (visible even during countdown) ----
+render_help_expander()
+
 st.write("**Tätigkeit A**")
 st.info(current["sentence_A"])
 st.write("**Tätigkeit B**")
@@ -143,7 +165,7 @@ def save_response(winner_side: str, unknown_term: bool):
     updated.to_csv(response_path, index=False)
     st.rerun()
 
-# --- 5s unlock timer per pair (strict gating) ---
+# --- 10s unlock timer per pair (strict gating) ---
 if st.session_state.get("last_pair_id") != current["pair_id"]:
     st.session_state["last_pair_id"] = current["pair_id"]
     st.session_state["unlock_at"] = time.time() + 10  # 10 seconds from now
@@ -152,15 +174,15 @@ remaining = max(0, st.session_state["unlock_at"] - time.time())
 remaining_int = int(remaining)
 
 if remaining_int > 0:
-    # Render ONLY the timer, then pause and rerun; nothing else will render this pass
+    # Show timer; buttons remain hidden, but explanation above is visible
     st.markdown(
         f"<div class='timer-box'>⏳ Bitte zuerst lesen.<br>"
         f"Die Auswahl erscheint in <span style='font-size:1.4em;'>{remaining_int}</span> Sekunden.</div>",
         unsafe_allow_html=True
     )
     time.sleep(1)
-    st.rerun()   # raises a rerun exception; no further code will run
-    st.stop()    # safety (won't be reached)
+    st.rerun()
+    st.stop()
 else:
     unknown = st.checkbox("⚑ Unbekannter Begriff in diesem Paar")
 
