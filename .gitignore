@@ -6,6 +6,7 @@ __pycache__/
 # original data
 *.dta
 generate_ra_jsons.py
+*.do
 
 # C extensions
 *.so
