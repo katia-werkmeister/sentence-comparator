@@ -73,14 +73,14 @@ if not st.session_state.started:
 Du siehst gleich mehrere **Paare von Tätigkeiten**, die Auszubildende im Rahmen ihrer Ausbildung lernen können. Bitte **entscheide für jedes Paar**, welche Tätigkeit **„offener“ formuliert** ist.
 
 **Was bedeutet „offen“?**  
-Eine offene Formulierung lässt **viele verschiedene Ausführungsmöglichkeiten** zu, zum Beispiel weil die Ausführung zwischen Betrieben oder Industrien variieren kann.
+Eine offene Formulierung lässt **viele verschiedene Ausführungsmöglichkeiten** zu, zum Beispiel weil Betriebe die Aufgabe auf ihre eigene Art und Weise ausführen können.
 
 **Beispiele:**
 - „Werbeaktionen und Veranstaltungen planen“ vs. „Anordnen und Platzieren von Fellen zu Werkstücken nach Wirkungsgrundsätzen“  
   > Die erste Tätigkeit ist offener, weil sie keinen Regeln folgt, die zweite aber „Wirkungsgrundsätzen“ folgt. 
   > Außerdem sind sowohl „planen“ als auch „Veranstaltungen“ sehr generell, aber sowohl „platzieren“ als auch „Felle“ sehr konkret.
 - „Anwenden zeitsparender Nähtechniken“ vs. „Vorbereitende Arbeiten für die Buchhaltung durchführen“ 
-  > Die zweite Tätigkeit ist offener, weil es verschiedene Buchhaltungsprogramme gibt und „vorbereitende Arbeiten“ viele verschiedene Tätigkeiten bedeuten kann (Belege sammeln, Rücksprache halten, Unterlagen digitalisieren, ...). 
+  > Die zweite Tätigkeit ist offener, weil es verschiedene Betriebe unterschiedliche Buchhaltungsprogramme nutzen und „vorbereitende Arbeiten“ viele verschiedene Tätigkeiten bedeuten kann (Belege sammeln, Rücksprache halten, Unterlagen digitalisieren, ...). 
   > Dagegen gibt es beschränkt viele „Nähtechniken“ und „zeitsparend“ schränkt die verfügbaren Techniken zusätzlich ein.
 
 **So gehst du vor:**
